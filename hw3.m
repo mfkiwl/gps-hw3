@@ -38,11 +38,12 @@ sigma_ydiff = std(ydiff);
 clearvars
 
 % Part B
-numSims = 1000;
+numSims = 100000;
 
 dt = 0.1;
-t_end = ( (1/dt) * 600 ) + 1; % number of dt's for 10 min
+t_end = (1/dt) * 600; % end time (s)
 time = 0:dt:t_end;
+Ts = length(time);
 
 sigma1 = 0.1;
 sigma2 = 0.01;
@@ -50,8 +51,8 @@ sigma2 = 0.01;
 wn1 = 0;
 wn2 = 0;
 
-int_wn1 = zeros(t_end, 1); % preallocation
-int_wn2 = zeros(t_end, 1);
+int_wn1 = zeros(Ts, 1); % preallocation
+int_wn2 = zeros(Ts, 1);
 
 m_int_wn1 = zeros(numSims, 1);
 m_int_wn2 = zeros(numSims, 1);
@@ -61,12 +62,12 @@ std_int_wn2 = zeros(numSims, 1);
 
 for i = 1:numSims % TODO: FIX THIS NOISE INTEGRATION
     
-    noise1 = sigma1 * wgn(1,1,0); % unit/s
-    noise2 = sigma2 * wgn(1,1,0); % unit/s
+    noise1 = sigma1 * wgn(Ts,1,0); % unit/s
+    noise2 = sigma2 * wgn(Ts,1,0); % unit/s
     
-    for j = 1:(t_end/dt) + 1
-        wn1 = wn1 + ( noise1 * dt );
-        wn2 = wn2 + ( noise2 * dt );
+    for j = 1:Ts
+        wn1 = wn1 + ( noise1(j) * dt );
+        wn2 = wn2 + ( noise2(j) * dt );
         
         int_wn1(j) = wn1;
         int_wn2(j) = wn2;
@@ -77,6 +78,9 @@ for i = 1:numSims % TODO: FIX THIS NOISE INTEGRATION
     
     std_int_wn1(i) = std(int_wn1);
     std_int_wn2(i) = std(int_wn2);
+    
+    wn1 = 0;
+    wn2 = 0;
 end
 
 sigma_act_wn1 = sigma1 .* dt .* sqrt(time);
