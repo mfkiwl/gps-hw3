@@ -4,9 +4,8 @@ clear
 clc
 close all
 
-%% Problem 1
+%% Problem 1 - Part A
 
-% Part A
 numMeas = 1;
 numSims = 1000;
 
@@ -37,11 +36,12 @@ sigma_ydiff = std(ydiff);
 
 clearvars
 
-% Part B
+%% Problem 1 - Part B
+
 numSims = 1000;
 
-dt = 0.1;
-t_end = (1/dt) * 600; % end time (s)
+dt = 1; % NOTE: Only matches anlytical for a dt of 1.
+t_end = 6000; % end time (s)
 t = 0:dt:t_end;
 Ts = length(t);
 
@@ -57,14 +57,14 @@ int_wn2 = zeros(Ts, numSims);
 m_int_wn1 = zeros(numSims, 1);
 m_int_wn2 = zeros(numSims, 1);
 
-for i = 1:numSims % TODO: FIX THIS NOISE INTEGRATION
+for i = 1:numSims
     
     noise1 = sigma1 * randn(Ts,1); % unit/s
     noise2 = sigma2 * randn(Ts,1); % unit/s
     
     for j = 1:Ts
-        wn1 = wn1 + ( noise1(j) * dt );
-        wn2 = wn2 + ( noise2(j) * dt );
+        wn1 = wn1 + noise1(j)  * dt;
+        wn2 = wn2 +  noise2(j)  * dt;
         
         int_wn1(j,i) = wn1;
         int_wn2(j,i) = wn2;
@@ -73,52 +73,118 @@ for i = 1:numSims % TODO: FIX THIS NOISE INTEGRATION
     wn2 = 0;
 end
 
-sigma_act_wn1 = sigma1 .* dt .* sqrt(t);
-sigma_act_wn2 = sigma2 .*dt .* sqrt(t);
+mean_wn1 = mean(wn1,2);
+mean_wn2 = mean(wn2,2);
+
+std_wn1 = std(int_wn1, 0, 2);
+std_wn2 = std(int_wn2, 0, 2);
+
+an_std_wn1 = sigma1 .* dt .* sqrt(t);
+an_std_wn2 = sigma2 .* dt .* sqrt(t);
 
 figure
-plot(t, sigma_act_wn1)
+plot(t,an_std_wn1)
 hold on
+plot(t,std_wn1)
+title('Random Walk Standard Deviation (\sigma = 0.1)')
+xlabel('Time (s)')
+ylabel('Standard Deviation')
+legend('Analytical','Monte Carlo','Location','best')
+
+figure
+plot(t,int_wn1)
+title('Random Walk: 1000 Simulations (\sigma = 0.1)')
+xlabel('Time (s)')
+ylabel('Integrated Noise Value')
+
+figure
+plot(t,an_std_wn2)
+hold on
+plot(t,std_wn2)
+title('Random Walk Standard Deviation (\sigma = 0.01)')
+xlabel('Time (s)')
+ylabel('Standard Deviation')
+legend('Analytical','Monte Carlo','Location','best')
+
+figure
+plot(t,int_wn2)
+title('Random Walk: 1000 Simulations (\sigma = 0.01)')
+xlabel('Time (s)')
+ylabel('Integrated Noise Value')
 
 clearvars
 
-% Part C
-% numSims = 1000;
-% 
-% sigma1 = 0.1;
-% sigma2 = 0.01;
-% 
-% dt = 0.1;
-% t = 0:dt:6000;
-% Ts = length(t);
-% tau1 = 1;
-% tau2 = 100;
-% 
-% A1 = 1 - (dt/tau1);
-% A2 = 1 - (dt/tau2);
-% 
-% sigma_x1 = sigma1 * dt * sqrt( (A1^2*t - 1)/(A1^2 - 1) );
-% sigma_x2 = sigma2 * dt * sqrt( (A2^2*t - 1)/(A2^2 - 1) );
-% 
-% x1 = 0;
-% x2 = 0;
-% 
-% x1_log = zeros(Ts, numSims);
-% x2_log = zeros(Ts, numSims);
-% 
-% for i = 1:numSims
-%     noise1 = sigma1 * randn(Ts,1); % unit/s
-%     noise2 = sigma2 * randn(Ts,1); % unit/s
-%     for j = 1:Ts
-%         
-%         x_dot1 = -(1/tau1) * x1 + noise1(j);
-%         x1 = x1 + x_dot1 * dt;
-%     
-%         x_dot2 = -(1/tau2) * x2 + noise2(j);
-%         x2 = x2 + x_dot2 * dt;
-% 
-%         x1_log(j,i) = x1;
-%         x2_log(j,i) = x2;
-%         
-%     end
-% end
+%% Problem 1 - Part C
+
+numSims = 1000;
+
+sigma1 = 0.1;
+sigma2 = 0.01;
+
+dt = 1;
+t_end = 6000;
+t = 0:dt:t_end;
+Ts = length(t);
+tau1 = 1;
+tau2 = 100;
+
+A1 = 1 - (dt/tau1);
+A2 = 1 - (dt/tau2);
+
+sigma_x1 = sigma1 * dt * sqrt( (A1^2*t - 1)/(A1^2 - 1) );
+sigma_x2 = sigma1 * dt * sqrt( (A2^2*t - 1)/(A2^2 - 1) );
+sigma_x3 = sigma2 * dt * sqrt( (A1^2*t - 1)/(A1^2 - 1) );
+sigma_x4 = sigma2 * dt * sqrt( (A2^2*t - 1)/(A2^2 - 1) );
+
+x1 = 0;
+x2 = 0;
+x3 = 0;
+x4 = 0;
+
+x1_log = zeros(Ts, numSims);
+x2_log = zeros(Ts, numSims);
+x3_log = zeros(Ts, numSims);
+x4_log = zeros(Ts, numSims);
+
+for i = 1:numSims
+
+    noise1 = sigma1 * randn(Ts,1); % unit/s
+    noise2 = sigma2 * randn(Ts,1); % unit/s
+
+    for j = 1:Ts
+        
+        x_dot1 = -(1/tau1) * x1 + noise1(j);
+        x1 = x1 + x_dot1 * dt;
+    
+        x_dot2 = -(1/tau2) * x2 + noise1(j);
+        x2 = x2 + x_dot2 * dt;
+
+        x_dot3 = -(1/tau1) * x1 + noise2(j);
+        x3 = x3 + x_dot3 * dt;
+    
+        x_dot4 = -(1/tau2) * x2 + noise2(j);
+        x4 = x4 + x_dot4 * dt;
+
+        x1_log(j,i) = x1;
+        x2_log(j,i) = x2;
+        x3_log(j,i) = x3;
+        x4_log(j,i) = x4;
+        
+    end
+
+    x1 = 0;
+    x2 = 0;
+    x3 = 0;
+    x4 = 0;
+
+end
+
+
+figure
+plot(t,an_std_wn1)
+hold on
+plot(t,std_wn1)
+title('Random Walk Standard Deviation (\sigma = 0.1)')
+xlabel('Time (s)')
+ylabel('Standard Deviation')
+legend('Analytical','Monte Carlo','Location','best')
