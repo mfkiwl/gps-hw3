@@ -6,9 +6,6 @@ clear
 clc
 close all
 
-dir = fileparts(which(mfilename)); % add all subfolders at run
-addpath(genpath(dir))
-
 %% Problem Scripts
 
 p1
