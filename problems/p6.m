@@ -1,4 +1,4 @@
-%% Fundamentals of GPS - Homework 3 - Problem 6
+%% Fundamentals of GPS - HW 3 - Problem 6
 
 clear
 clc
